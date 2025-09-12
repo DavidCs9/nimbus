@@ -1,4 +1,6 @@
-# 🌀 Nimbus - Mini## 📸 Preview
+# 🌀 Nimbus - Mini AWS Console
+
+## 📸 Preview
 
 ![Nimbus Console Login Interface](docs/screenshots/nimbus-login-interface.png)
 _The sleek login interface with AWS Cognito authentication_
@@ -21,11 +23,6 @@ Build a lightweight AWS Console that:
 - ✅ Doubles as a **portfolio piece** showcasing system design and cloud integration
 
 For detailed project overview and architecture, see [`overview.md`](./overview.md).
-
-## � Preview
-
-![Nimbus Console Login Interface](docs/screenshots/nimbus-login-interface.png)
-_The sleek login interface with AWS Cognito authentication_
 
 ## �🚀 Getting Started
 

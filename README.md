@@ -1,4 +1,10 @@
-# 🌀 Nimbus - Mini AWS Console
+# 🌀 Nimbus - Mini## 📸 Preview
+
+![Nimbus Console Login Interface](docs/screenshots/nimbus-login-interface.png)
+_The sleek login interface with AWS Cognito authentication_
+
+![Nimbus Console Dashboard](docs/screenshots/nimbus-dashboard-interface.png)
+_The main dashboard showing AWS services overview and account information_ Console
 
 > **🚧 Currently in Development**
 

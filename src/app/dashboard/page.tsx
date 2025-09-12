@@ -64,10 +64,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="border-b bg-card flex-shrink-0">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="inline-flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
               <svg
@@ -95,10 +95,10 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 container mx-auto px-6 py-6 overflow-auto">
+        <div className="h-full max-w-7xl mx-auto">
           {/* Welcome Section */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-3xl font-bold text-foreground mb-2">
               Welcome to Nimbus Console
             </h2>
@@ -108,118 +108,165 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Welcome Card */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <svg
-                  className="w-5 h-5 text-primary"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-                <span>Getting Started</span>
-              </CardTitle>
-              <CardDescription>
-                Welcome to your AWS management dashboard. Here you can monitor
-                and manage your cloud resources.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg bg-card">
-                    <h3 className="font-semibold text-foreground mb-2">
-                      AWS Lambda
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Manage your serverless functions
-                    </p>
-                    <div className="mt-3">
-                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                        Coming Soon
-                      </span>
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            {/* AWS Services Section */}
+            <div className="xl:col-span-3">
+              <Card className="h-fit">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-primary"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                      </svg>
+                    </div>
+                    <span>AWS Services</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Monitor and manage your cloud resources across different AWS
+                    services.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="group p-4 border rounded-xl bg-gradient-to-br from-card to-muted/20 hover:from-primary/5 hover:to-primary/10 transition-all duration-200 hover:border-primary/20">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                          <svg
+                            className="w-5 h-5 text-orange-500"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M.5 17.5L12 22l11.5-4.5v-5L12 17 .5 12.5v5zM.5 12L12 16.5 23.5 12 12 7.5.5 12zM.5 6.5L12 11 23.5 6.5 12 2 .5 6.5z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs bg-secondary/80 text-secondary-foreground px-2 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-2">
+                        AWS Lambda
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Manage your serverless functions and monitor executions
+                      </p>
+                    </div>
+
+                    <div className="group p-4 border rounded-xl bg-gradient-to-br from-card to-muted/20 hover:from-primary/5 hover:to-primary/10 transition-all duration-200 hover:border-primary/20">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                          <svg
+                            className="w-5 h-5 text-green-500"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M19 7H9V5a3 3 0 0 1 6 0v2zM5 7h2v12h10V7h2a1 1 0 0 1 1 1v12a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a1 1 0 0 1 1-1z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs bg-secondary/80 text-secondary-foreground px-2 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-2">
+                        Amazon S3
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Browse and manage your storage buckets and objects
+                      </p>
+                    </div>
+
+                    <div className="group p-4 border rounded-xl bg-gradient-to-br from-card to-muted/20 hover:from-primary/5 hover:to-primary/10 transition-all duration-200 hover:border-primary/20">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                          <svg
+                            className="w-5 h-5 text-blue-500"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs bg-secondary/80 text-secondary-foreground px-2 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-2">
+                        DynamoDB
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Monitor your NoSQL databases and tables
+                      </p>
                     </div>
                   </div>
 
-                  <div className="p-4 border rounded-lg bg-card">
-                    <h3 className="font-semibold text-foreground mb-2">
-                      Amazon S3
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Browse and manage your storage buckets
-                    </p>
-                    <div className="mt-3">
-                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                        Coming Soon
+                  <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-foreground">
+                        Connected
                       </span>
                     </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg bg-card">
-                    <h3 className="font-semibold text-foreground mb-2">
-                      DynamoDB
-                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Monitor your NoSQL databases
+                      Successfully authenticated with AWS Cognito. More service
+                      integrations will be added soon.
                     </p>
-                    <div className="mt-3">
-                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                        Coming Soon
-                      </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Account Information Sidebar */}
+            <div className="xl:col-span-1">
+              <Card className="h-fit">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-primary"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    </div>
+                    <span>Account</span>
+                  </CardTitle>
+                  <CardDescription>Your session information</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Email
+                      </label>
+                      <p className="text-sm text-foreground mt-1 break-all">
+                        {user?.email || "Not available"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Name
+                      </label>
+                      <p className="text-sm text-foreground mt-1">
+                        {user?.name || "Not set"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        User ID
+                      </label>
+                      <p className="text-xs text-foreground font-mono mt-1 break-all bg-muted/50 p-2 rounded">
+                        {user?.id || "Not available"}
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Current Status:</strong> You are successfully
-                    authenticated with AWS Cognito. More AWS service
-                    integrations will be added soon.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* User Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>
-                Your authentication details and session information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Email:
-                  </span>
-                  <span className="text-sm text-foreground">
-                    {user?.email || "Not available"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Name:
-                  </span>
-                  <span className="text-sm text-foreground">
-                    {user?.name || "Not set"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    User ID:
-                  </span>
-                  <span className="text-sm text-foreground font-mono">
-                    {user?.id || "Not available"}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
     </div>

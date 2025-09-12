@@ -16,7 +16,12 @@ Build a lightweight AWS Console that:
 
 For detailed project overview and architecture, see [`overview.md`](./overview.md).
 
-## 🚀 Getting Started
+## � Preview
+
+![Nimbus Console Login Interface](docs/screenshots/nimbus-login-interface.png)
+_The sleek login interface with AWS Cognito authentication_
+
+## �🚀 Getting Started
 
 First, run the development server:
 

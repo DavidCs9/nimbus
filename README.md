@@ -55,9 +55,65 @@ src/
 
 ## 🎯 Current Status
 
-This project is **actively under development**. Core features being implemented:
+This project is **actively under development**. Core features implemented:
 
-- [ ] AWS Cognito authentication flow
+- ✅ **AWS Cognito authentication flow** with Hosted UI integration
+- ✅ **Secure token management** with automatic refresh
+- ✅ **STS credential exchange** for temporary AWS access
+- ✅ **Modern authentication UI** with error handling
 - [ ] Service dashboards (Lambda, API Gateway, S3, DynamoDB)
 - [ ] Real-time AWS resource monitoring
 - [ ] Optimistic UI updates with TanStack Query
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- AWS Account with Cognito User Pool and Identity Pool configured
+- Basic understanding of AWS IAM and Cognito
+
+### Setup
+
+1. **Clone and install dependencies:**
+
+   ```bash
+   git clone <repository-url>
+   cd nimbus
+   pnpm install
+   ```
+
+2. **Configure AWS Cognito:**
+   Follow our detailed [Cognito Setup Guide](./docs/COGNITO_SETUP.md) to set up:
+
+   - Cognito User Pool with Hosted UI
+   - Cognito Identity Pool for AWS access
+   - IAM roles with appropriate permissions
+
+3. **Environment configuration:**
+
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your Cognito configuration
+   ```
+
+4. **Start development server:**
+
+   ```bash
+   pnpm dev
+   ```
+
+5. **Test authentication:**
+   - Navigate to http://localhost:3000/login
+   - Click "Continue with AWS Cognito"
+   - Complete the sign-in flow
+
+### Authentication Flow
+
+The authentication system implements a secure OAuth2 flow:
+
+1. **Login**: Redirects to Cognito Hosted UI
+2. **Callback**: Handles authorization code exchange
+3. **Token Management**: Stores JWT tokens securely in session storage
+4. **AWS Access**: Exchanges tokens for temporary AWS credentials
+5. **Auto-refresh**: Automatically refreshes expired tokens

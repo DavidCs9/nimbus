@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { authService } from '@/lib/auth-service';
-import type { User, AuthTokens } from '@/lib/auth-context';
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authService } from "@/lib/auth-service";
+import type { User, AuthTokens } from "@/lib/auth-context";
 
 /**
  * Authentication Callback Page
- * 
+ *
  * Handles the return from Cognito Hosted UI after authentication.
  * Exchanges the authorization code for tokens and redirects to the dashboard.
  */
 export default function AuthCallbackPage() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,50 +22,55 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const code = searchParams.get('code');
-        const errorParam = searchParams.get('error');
+        const code = searchParams.get("code");
+        const errorParam = searchParams.get("error");
 
         // Check for error in URL parameters
         if (errorParam) {
-          const errorDescription = searchParams.get('error_description') || errorParam;
+          const errorDescription =
+            searchParams.get("error_description") || errorParam;
           throw new Error(`Authentication failed: ${errorDescription}`);
         }
 
         // Check for authorization code
         if (!code) {
-          throw new Error('No authorization code received');
+          throw new Error("No authorization code received");
         }
 
-        setStatus('loading');
+        setStatus("loading");
 
         // Exchange code for tokens
         const { user, tokens } = await authService.handleCallback(code);
 
         // Set authentication state globally
-        if (typeof window !== 'undefined') {
-          const windowWithAuth = window as Window & { 
-            __nimbus_setAuthenticated?: (user: User, tokens: AuthTokens) => void 
+        if (typeof window !== "undefined") {
+          const windowWithAuth = window as Window & {
+            __nimbus_setAuthenticated?: (
+              user: User,
+              tokens: AuthTokens
+            ) => void;
           };
           if (windowWithAuth.__nimbus_setAuthenticated) {
             windowWithAuth.__nimbus_setAuthenticated(user, tokens);
           }
         }
 
-        setStatus('success');
+        setStatus("success");
 
         // Redirect to dashboard after a brief delay
         setTimeout(() => {
-          router.replace('/');
+          router.replace("/dashboard");
         }, 1000);
-
       } catch (error) {
-        console.error('Authentication callback error:', error);
-        setError(error instanceof Error ? error.message : 'Authentication failed');
-        setStatus('error');
+        console.error("Authentication callback error:", error);
+        setError(
+          error instanceof Error ? error.message : "Authentication failed"
+        );
+        setStatus("error");
 
         // Redirect to login after a delay on error
         setTimeout(() => {
-          router.replace('/login');
+          router.replace("/login");
         }, 3000);
       }
     };
@@ -83,12 +90,12 @@ export default function AuthCallbackPage() {
             <path d="M13 3L4 14h7v7l9-11h-7V3z" />
           </svg>
         </div>
-        
+
         <h1 className="text-2xl font-bold text-foreground mb-2">
           Nimbus Console
         </h1>
 
-        {status === 'loading' && (
+        {status === "loading" && (
           <div className="space-y-4">
             <div className="flex items-center justify-center">
               <svg
@@ -118,7 +125,7 @@ export default function AuthCallbackPage() {
           </div>
         )}
 
-        {status === 'success' && (
+        {status === "success" && (
           <div className="space-y-4">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
               <svg
@@ -146,7 +153,7 @@ export default function AuthCallbackPage() {
           </div>
         )}
 
-        {status === 'error' && (
+        {status === "error" && (
           <div className="space-y-4">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-full">
               <svg
@@ -167,9 +174,7 @@ export default function AuthCallbackPage() {
               <h2 className="text-lg font-semibold text-foreground mb-1">
                 Authentication Failed
               </h2>
-              <p className="text-red-600 text-sm mb-4">
-                {error}
-              </p>
+              <p className="text-red-600 text-sm mb-4">{error}</p>
               <p className="text-muted-foreground text-sm">
                 Redirecting to login page...
               </p>

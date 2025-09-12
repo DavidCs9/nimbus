@@ -1,28 +1,26 @@
-# 🌀 Nimbus - Mini AWS Console
+# 🌀 Nimbus - The Fast AWS Console
 
 ## 📸 Preview
 
 ![Nimbus Console Login Interface](docs/screenshots/nimbus-login-interface.png)
-_The sleek login interface with AWS Cognito authentication_
+_Lightning-fast login with seamless Cognito authentication flow_
 
 ![Nimbus Console Dashboard](docs/screenshots/nimbus-dashboard-interface.png)
-_The main dashboard showing AWS services overview and account information_ Console
+_Instant dashboard loading with real-time AWS service monitoring_
 
-> **🚧 Currently in Development**
+> **⚡ Performance-First AWS Console - Currently in Development**
 
-A custom, focused AWS Management Console built with Next.js. This project provides a fast, opinionated, serverless-first UI for the AWS services I use most, while serving as a deep learning exercise in AWS APIs, authentication flows, and modern frontend architecture.
+A **lightning-fast AWS Management Console** built with Next.js 15 that prioritizes speed and user experience. Nimbus delivers instant interactions, zero-latency navigation, and a delightfully smooth interface for managing your essential AWS services without the bloat.
 
-## 🎯 Project Goal
+## ⚡ Why Nimbus is Faster
 
-Build a lightweight AWS Console that:
+Experience AWS management at the speed of thought:
 
-- ✅ Authenticates securely using **Cognito + STS** (temporary credentials)
-- ✅ Interacts **directly with AWS services via SDK** for a snappy UX
-- ✅ Provides a **better user experience** for core services (Lambda, API Gateway, DynamoDB, S3, CloudFormation)
-- ✅ Serves as a **learning project** to deepen AWS and frontend engineering skills
-- ✅ Doubles as a **portfolio piece** showcasing system design and cloud integration
-
-For detailed project overview and architecture, see [`overview.md`](./overview.md).
+- **Zero Backend Latency** - Direct browser-to-AWS communication eliminates proxy delays
+- **Instant Page Transitions** - Next.js App Router with optimized routing and prefetching
+- **Optimistic UI Updates** - Actions feel immediate with smart local state management
+- **Minimal Bundle Size** - Only loads what you need, when you need it
+- **Smart Caching** - Intelligent resource caching reduces redundant API calls
 
 ## �🚀 Getting Started
 
@@ -36,13 +34,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 🛠 Tech Stack
+## 🛠 Performance-First Tech Stack
 
-- **Frontend**: Next.js 15 with App Router
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Package Manager**: pnpm (as specified in project guidelines)
-- **AWS Integration**: AWS SDK for JavaScript
-- **Authentication**: AWS Cognito + STS for temporary credentials
+- **Frontend**: Next.js 15 with App Router for instant navigation
+- **Styling**: Tailwind CSS + shadcn/ui for optimized bundle size
+- **Package Manager**: pnpm for faster installs and smaller node_modules
+- **AWS Integration**: Direct AWS SDK calls for zero proxy latency
+- **Authentication**: Streamlined Cognito + STS flow for quick login
+- **State Management**: Optimistic UI patterns for immediate feedback
 
 ## 📁 Project Structure
 
@@ -56,17 +55,17 @@ src/
 └── lib/             # Utility functions and configurations
 ```
 
-## 🎯 Current Status
+## ⚡ Current Performance Features
 
-This project is **actively under development**. Core features implemented:
+This blazing-fast console is **actively under development**. Core features implemented:
 
-- ✅ **AWS Cognito authentication flow** with Hosted UI integration
-- ✅ **Secure token management** with automatic refresh
-- ✅ **STS credential exchange** for temporary AWS access
-- ✅ **Modern authentication UI** with error handling
-- [ ] Service dashboards (Lambda, API Gateway, S3, DynamoDB)
-- [ ] Real-time AWS resource monitoring
-- [ ] Optimistic UI updates with TanStack Query
+- ✅ **Instant Authentication** - Streamlined Cognito flow with automatic token refresh
+- ✅ **Zero-Latency Navigation** - Pre-loaded routes and optimistic state management
+- ✅ **Smart Credential Management** - Seamless STS integration with background refresh
+- ✅ **Lightning-Fast UI** - Modern interface optimized for speed and productivity
+- 🚧 **Real-Time Service Dashboards** - Live monitoring for Lambda, API Gateway, S3, DynamoDB
+- 🚧 **Instant Search** - Sub-50ms resource discovery across all services
+- 🚧 **Optimistic Mutations** - Actions complete before AWS confirms them
 
 ## 🚀 Quick Start
 

@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌀 Nimbus - Mini AWS Console
 
-## Getting Started
+> **🚧 Currently in Development**
+
+A custom, focused AWS Management Console built with Next.js. This project provides a fast, opinionated, serverless-first UI for the AWS services I use most, while serving as a deep learning exercise in AWS APIs, authentication flows, and modern frontend architecture.
+
+## 🎯 Project Goal
+
+Build a lightweight AWS Console that:
+
+- ✅ Authenticates securely using **Cognito + STS** (temporary credentials)
+- ✅ Interacts **directly with AWS services via SDK** for a snappy UX
+- ✅ Provides a **better user experience** for core services (Lambda, API Gateway, DynamoDB, S3, CloudFormation)
+- ✅ Serves as a **learning project** to deepen AWS and frontend engineering skills
+- ✅ Doubles as a **portfolio piece** showcasing system design and cloud integration
+
+For detailed project overview and architecture, see [`overview.md`](./overview.md).
+
+## 🚀 Getting Started
 
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 Tech Stack
 
-## Learn More
+- **Frontend**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Package Manager**: pnpm (as specified in project guidelines)
+- **AWS Integration**: AWS SDK for JavaScript
+- **Authentication**: AWS Cognito + STS for temporary credentials
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/              # Next.js App Router pages
+│   ├── login/        # Authentication pages
+│   └── layout.tsx    # Root layout
+├── components/       # Reusable UI components
+│   └── ui/          # shadcn/ui components
+└── lib/             # Utility functions and configurations
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎯 Current Status
 
-## Deploy on Vercel
+This project is **actively under development**. Core features being implemented:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] AWS Cognito authentication flow
+- [ ] Service dashboards (Lambda, API Gateway, S3, DynamoDB)
+- [ ] Real-time AWS resource monitoring
+- [ ] Optimistic UI updates with TanStack Query

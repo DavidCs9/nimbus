@@ -8,12 +8,8 @@
  * - Type-safe interfaces
  */
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useQueries,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { ec2Service } from "@/lib/services/ec2-service";
 import { authService } from "@/lib/auth-service";
 import type {
@@ -99,13 +95,21 @@ export function useEC2Instances(
 /**
  * Hook to fetch EC2 statistics with optimized caching
  */
-export function useEC2Stats(region: string, idToken?: string) {
+export function useEC2Stats(
+  region: string,
+  idToken?: string,
+  instances?: EC2Instance[]
+) {
   // Setup service first
   const serviceSetup = useEC2ServiceSetup(region, idToken);
 
   return useQuery({
     queryKey: ec2QueryKeys.stats(region),
     queryFn: async (): Promise<EC2Stats> => {
+      // Use provided instances if available, otherwise fetch fresh data
+      if (instances) {
+        return ec2Service.calculateStatsFromInstances(instances);
+      }
       return await ec2Service.getInstanceStats();
     },
     enabled: !!idToken && serviceSetup.isSuccess,
@@ -147,55 +151,62 @@ export function useEC2Data(
   // Setup service first
   const serviceSetup = useEC2ServiceSetup(region, idToken);
 
-  const queries = useQueries({
-    queries: [
-      {
-        queryKey: ec2QueryKeys.instances(region, filters),
-        queryFn: async (): Promise<EC2Instance[]> => {
-          return await ec2Service.describeInstances(filters);
-        },
-        enabled: !!idToken && serviceSetup.isSuccess,
-        staleTime: 1000 * 30,
-        gcTime: 1000 * 60 * 5,
-        refetchInterval: 1000 * 60,
-        refetchIntervalInBackground: true,
-        select: (data: EC2Instance[]) => {
-          return data.sort((a, b) => {
-            const nameA = a.name || a.id;
-            const nameB = b.name || b.id;
-            return nameA.localeCompare(nameB);
-          });
-        },
-      },
-      {
-        queryKey: ec2QueryKeys.stats(region),
-        queryFn: async (): Promise<EC2Stats> => {
-          return await ec2Service.getInstanceStats();
-        },
-        enabled: !!idToken && serviceSetup.isSuccess,
-        staleTime: 1000 * 60,
-        gcTime: 1000 * 60 * 5,
-        refetchInterval: 1000 * 60 * 2,
-        refetchIntervalInBackground: true,
-      },
-    ],
+  // Fetch instances
+  const instancesQuery = useQuery({
+    queryKey: ec2QueryKeys.instances(region, filters),
+    queryFn: async (): Promise<EC2Instance[]> => {
+      return await ec2Service.describeInstances(filters);
+    },
+    enabled: !!idToken && serviceSetup.isSuccess,
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60,
+    refetchIntervalInBackground: true,
+    select: (data: EC2Instance[]) => {
+      return data.sort((a, b) => {
+        const nameA = a.name || a.id;
+        const nameB = b.name || b.id;
+        return nameA.localeCompare(nameB);
+      });
+    },
   });
 
-  const [instancesQuery, statsQuery] = queries;
+  // Calculate stats from instances data using useMemo for automatic reactivity
+  const stats = useMemo(() => {
+    if (!instancesQuery.data) {
+      return {
+        runningInstances: 0,
+        stoppedInstances: 0,
+        totalInstances: 0,
+        totalVCPUs: 0,
+        estimatedMonthlyCost: 0,
+        instancesByType: {},
+        instancesByRegion: {},
+      };
+    }
+    return ec2Service.calculateStatsFromInstances(instancesQuery.data);
+  }, [instancesQuery.data]);
+
+  // Create a mock stats query object to maintain API compatibility
+  const statsQuery = {
+    data: stats,
+    isLoading: instancesQuery.isLoading,
+    isError: instancesQuery.isError,
+    error: instancesQuery.error,
+    refetch: instancesQuery.refetch,
+    isSuccess: instancesQuery.isSuccess,
+    isFetching: instancesQuery.isFetching,
+  };
 
   return {
     instances: instancesQuery,
     stats: statsQuery,
-    isLoading:
-      serviceSetup.isLoading ||
-      instancesQuery.isLoading ||
-      statsQuery.isLoading,
-    isError:
-      serviceSetup.isError || instancesQuery.isError || statsQuery.isError,
-    error: serviceSetup.error || instancesQuery.error || statsQuery.error,
+    isLoading: serviceSetup.isLoading || instancesQuery.isLoading,
+    isError: serviceSetup.isError || instancesQuery.isError,
+    error: serviceSetup.error || instancesQuery.error,
     refetch: () => {
       instancesQuery.refetch();
-      statsQuery.refetch();
+      // Stats will automatically update via useMemo when instances change
     },
   };
 }
@@ -259,6 +270,7 @@ export function useStartInstance(region: string) {
           ec2QueryKeys.instances(region),
           optimisticInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
 
       return { previousInstances };
@@ -288,6 +300,7 @@ export function useStartInstance(region: string) {
           ec2QueryKeys.instances(region),
           updatedInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
     },
     onSettled: () => {
@@ -295,7 +308,7 @@ export function useStartInstance(region: string) {
       queryClient.invalidateQueries({
         queryKey: ec2QueryKeys.instances(region),
       });
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // No need to invalidate stats separately - they're calculated from instances
     },
   });
 }
@@ -335,6 +348,7 @@ export function useStopInstance(region: string) {
           ec2QueryKeys.instances(region),
           optimisticInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
 
       return { previousInstances };
@@ -362,13 +376,14 @@ export function useStopInstance(region: string) {
           ec2QueryKeys.instances(region),
           updatedInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
     },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ec2QueryKeys.instances(region),
       });
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // No need to invalidate stats separately - they're calculated from instances
     },
   });
 }
@@ -404,6 +419,7 @@ export function useRebootInstance(region: string) {
           ec2QueryKeys.instances(region),
           optimisticInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
 
       return { previousInstances };
@@ -420,7 +436,7 @@ export function useRebootInstance(region: string) {
       queryClient.invalidateQueries({
         queryKey: ec2QueryKeys.instances(region),
       });
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // No need to invalidate stats separately - they're calculated from instances
     },
   });
 }
@@ -456,6 +472,7 @@ export function useTerminateInstance(region: string) {
           ec2QueryKeys.instances(region),
           optimisticInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
 
       return { previousInstances };
@@ -483,13 +500,14 @@ export function useTerminateInstance(region: string) {
           ec2QueryKeys.instances(region),
           updatedInstances
         );
+        // Stats will automatically update via useMemo in useEC2Data
       }
     },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ec2QueryKeys.instances(region),
       });
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // No need to invalidate stats separately - they're calculated from instances
     },
   });
 }
@@ -505,7 +523,7 @@ export function useRefreshEC2Data(region: string) {
       queryClient.invalidateQueries({
         queryKey: ec2QueryKeys.instances(region),
       });
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // Stats will automatically update when instances refresh
     },
     refreshInstances: () => {
       queryClient.invalidateQueries({
@@ -513,7 +531,10 @@ export function useRefreshEC2Data(region: string) {
       });
     },
     refreshStats: () => {
-      queryClient.invalidateQueries({ queryKey: ec2QueryKeys.stats(region) });
+      // Since stats are calculated from instances, just refresh instances
+      queryClient.invalidateQueries({
+        queryKey: ec2QueryKeys.instances(region),
+      });
     },
   };
 }

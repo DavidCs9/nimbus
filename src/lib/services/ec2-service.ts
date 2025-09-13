@@ -310,51 +310,57 @@ export class EC2Service {
   }
 
   /**
+   * Calculates statistics from provided instances array
+   */
+  public calculateStatsFromInstances(instances: EC2Instance[]): EC2Stats {
+    const stats: EC2Stats = {
+      runningInstances: 0,
+      stoppedInstances: 0,
+      totalInstances: instances.length,
+      totalVCPUs: 0,
+      estimatedMonthlyCost: 0,
+      instancesByType: {},
+      instancesByRegion: {},
+    };
+
+    for (const instance of instances) {
+      // Count by state
+      if (instance.state === "running") {
+        stats.runningInstances++;
+      } else if (instance.state === "stopped") {
+        stats.stoppedInstances++;
+      }
+
+      // Count by type
+      stats.instancesByType[instance.instanceType] =
+        (stats.instancesByType[instance.instanceType] || 0) + 1;
+
+      // Count by region (using AZ to infer region)
+      const region = instance.availabilityZone.slice(0, -1);
+      stats.instancesByRegion[region] =
+        (stats.instancesByRegion[region] || 0) + 1;
+
+      // Estimate VCPUs and costs (simplified calculation)
+      const vcpus = this.estimateVCPUs(instance.instanceType);
+      stats.totalVCPUs += vcpus;
+
+      if (instance.state === "running") {
+        stats.estimatedMonthlyCost += this.estimateMonthlyCost(
+          instance.instanceType
+        );
+      }
+    }
+
+    return stats;
+  }
+
+  /**
    * Gets aggregated statistics for EC2 instances
    */
   public async getInstanceStats(): Promise<EC2Stats> {
     try {
       const instances = await this.describeInstances();
-
-      const stats: EC2Stats = {
-        runningInstances: 0,
-        stoppedInstances: 0,
-        totalInstances: instances.length,
-        totalVCPUs: 0,
-        estimatedMonthlyCost: 0,
-        instancesByType: {},
-        instancesByRegion: {},
-      };
-
-      for (const instance of instances) {
-        // Count by state
-        if (instance.state === "running") {
-          stats.runningInstances++;
-        } else if (instance.state === "stopped") {
-          stats.stoppedInstances++;
-        }
-
-        // Count by type
-        stats.instancesByType[instance.instanceType] =
-          (stats.instancesByType[instance.instanceType] || 0) + 1;
-
-        // Count by region (using AZ to infer region)
-        const region = instance.availabilityZone.slice(0, -1);
-        stats.instancesByRegion[region] =
-          (stats.instancesByRegion[region] || 0) + 1;
-
-        // Estimate VCPUs and costs (simplified calculation)
-        const vcpus = this.estimateVCPUs(instance.instanceType);
-        stats.totalVCPUs += vcpus;
-
-        if (instance.state === "running") {
-          stats.estimatedMonthlyCost += this.estimateMonthlyCost(
-            instance.instanceType
-          );
-        }
-      }
-
-      return stats;
+      return this.calculateStatsFromInstances(instances);
     } catch (error) {
       throw this.handleError(error, "getInstanceStats");
     }

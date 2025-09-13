@@ -42,8 +42,9 @@ import {
 export class EC2Service {
   private client: EC2Client;
   private config: EC2ServiceConfig;
+  private credentials?: unknown;
 
-  constructor(config?: Partial<EC2ServiceConfig>) {
+  constructor(config?: Partial<EC2ServiceConfig>, credentials?: unknown) {
     this.config = {
       region: config?.region || awsConfigManager.getEC2Config().region,
       maxRetries: config?.maxRetries || 3,
@@ -51,9 +52,14 @@ export class EC2Service {
       enableRetry: config?.enableRetry ?? true,
     };
 
+    this.credentials = credentials;
+
     // Initialize EC2 client with configuration
     this.client = new EC2Client({
-      ...awsConfigManager.getEC2ClientConfig(this.config.region),
+      ...awsConfigManager.getEC2ClientConfig(
+        this.config.region,
+        this.credentials
+      ),
       maxAttempts: this.config.maxRetries,
     });
   }
@@ -61,10 +67,33 @@ export class EC2Service {
   /**
    * Updates the service configuration and reinitializes the client
    */
-  public updateConfig(newConfig: Partial<EC2ServiceConfig>): void {
+  public updateConfig(
+    newConfig: Partial<EC2ServiceConfig>,
+    credentials?: unknown
+  ): void {
     this.config = { ...this.config, ...newConfig };
+    if (credentials) {
+      this.credentials = credentials;
+    }
     this.client = new EC2Client({
-      ...awsConfigManager.getEC2ClientConfig(this.config.region),
+      ...awsConfigManager.getEC2ClientConfig(
+        this.config.region,
+        this.credentials
+      ),
+      maxAttempts: this.config.maxRetries,
+    });
+  }
+
+  /**
+   * Sets credentials for the service and reinitializes the client
+   */
+  public setCredentials(credentials: unknown): void {
+    this.credentials = credentials;
+    this.client = new EC2Client({
+      ...awsConfigManager.getEC2ClientConfig(
+        this.config.region,
+        this.credentials
+      ),
       maxAttempts: this.config.maxRetries,
     });
   }

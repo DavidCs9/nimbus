@@ -2,8 +2,10 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { EC2Layout, EC2Instance } from "@/components/ec2";
+import { useEffect, useState, useCallback } from "react";
+import { EC2Layout, type EC2Instance, type EC2Stats } from "@/components/ec2";
+import { ec2Service } from "@/lib/services/ec2-service";
+import { authService } from "@/lib/auth-service";
 
 /**
  * EC2 Management Page
@@ -12,60 +14,74 @@ import { EC2Layout, EC2Instance } from "@/components/ec2";
  * Allows users to view, monitor, and manage their virtual servers.
  */
 export default function EC2Page() {
-  const { user, isAuthenticated, isLoading, signOut } = useAuth();
+  const { user, isAuthenticated, isLoading, tokens, signOut } = useAuth();
   const router = useRouter();
   const [selectedRegion, setSelectedRegion] = useState("us-east-1");
+  const [instances, setInstances] = useState<EC2Instance[]>([]);
+  const [stats, setStats] = useState<EC2Stats>({
+    runningInstances: 0,
+    stoppedInstances: 0,
+    totalInstances: 0,
+    totalVCPUs: 0,
+    estimatedMonthlyCost: 0,
+    instancesByType: {},
+    instancesByRegion: {},
+  });
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with actual AWS API calls
-  const mockStats = {
-    runningInstances: 3,
-    stoppedInstances: 1,
-    totalVCPUs: 8,
-    monthlyCost: 127,
-  };
+  // Function to fetch EC2 data from the service
+  const fetchEC2Data = useCallback(async () => {
+    if (!isAuthenticated || !tokens?.idToken) return;
 
-  const mockInstances: EC2Instance[] = [
-    {
-      id: "i-0abc123def456789a",
-      name: "web-server-01",
-      instanceType: "t3.medium",
-      state: "running",
-      publicIp: "54.123.45.67",
-      privateIp: "10.0.1.123",
-    },
-    {
-      id: "i-0def456abc123789b",
-      name: "api-server-01",
-      instanceType: "t3.large",
-      state: "running",
-      publicIp: "54.234.56.78",
-      privateIp: "10.0.1.124",
-    },
-    {
-      id: "i-0ghi789jkl012345c",
-      name: "database-backup",
-      instanceType: "t3.small",
-      state: "stopped",
-      privateIp: "10.0.1.125",
-    },
-  ];
+    setIsLoadingData(true);
+    setError(null);
 
+    try {
+      // Configure credentials for the EC2 service
+      const credentialProvider = await authService.createCredentialProvider(
+        tokens.idToken
+      );
+      ec2Service.setCredentials(credentialProvider);
+
+      // Update service region if needed
+      if (ec2Service["config"].region !== selectedRegion) {
+        ec2Service.updateConfig({ region: selectedRegion });
+      }
+
+      // Fetch instances and stats in parallel
+      const [instancesData, statsData] = await Promise.all([
+        ec2Service.describeInstances(),
+        ec2Service.getInstanceStats(),
+      ]);
+
+      setInstances(instancesData);
+      setStats(statsData);
+    } catch (err) {
+      console.error("Failed to fetch EC2 data:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch EC2 data");
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, [isAuthenticated, selectedRegion, tokens?.idToken]);
+
+  // Mock data for offline development (remove when service is fully integrated)
   const mockResourceLimits = [
     {
       label: "Running Instances",
-      current: 3,
+      current: stats.runningInstances,
       max: 20,
       color: "bg-blue-500",
     },
     {
       label: "vCPU Usage",
-      current: 8,
+      current: stats.totalVCPUs,
       max: 50,
       color: "bg-green-500",
     },
     {
       label: "Elastic IPs",
-      current: 2,
+      current: instances.filter((i) => i.publicIp).length,
       max: 5,
       color: "bg-orange-500",
     },
@@ -73,19 +89,9 @@ export default function EC2Page() {
 
   const mockRecentActivities = [
     {
-      action: "Instance Started",
-      target: "web-server-01",
-      timestamp: "2 hours ago",
-    },
-    {
-      action: "Instance Launched",
-      target: "api-server-01",
-      timestamp: "1 day ago",
-    },
-    {
-      action: "Instance Stopped",
-      target: "database-backup",
-      timestamp: "3 days ago",
+      action: "Data Refreshed",
+      target: "EC2 Service",
+      timestamp: "Just now",
     },
   ];
 
@@ -96,8 +102,15 @@ export default function EC2Page() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Fetch EC2 data when authenticated and region changes
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      fetchEC2Data();
+    }
+  }, [isAuthenticated, isLoading, selectedRegion, fetchEC2Data]);
+
   // Show loading while checking authentication
-  if (isLoading) {
+  if (isLoading || isLoadingData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
@@ -137,12 +150,10 @@ export default function EC2Page() {
 
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region);
-    // TODO: Fetch instances for new region
   };
 
   const handleRefresh = () => {
-    // TODO: Refresh instance data
-    console.log("Refreshing instances...");
+    fetchEC2Data();
   };
 
   const handleLaunchInstance = () => {
@@ -150,9 +161,38 @@ export default function EC2Page() {
     console.log("Launching new instance...");
   };
 
-  const handleInstanceAction = (instanceId: string, action: string) => {
-    // TODO: Implement instance actions (start, stop, terminate, etc.)
-    console.log(`Performing ${action} on instance ${instanceId}`);
+  const handleInstanceAction = async (instanceId: string, action: string) => {
+    try {
+      setIsLoadingData(true);
+
+      switch (action) {
+        case "start":
+          await ec2Service.startInstance(instanceId);
+          break;
+        case "stop":
+          await ec2Service.stopInstance(instanceId);
+          break;
+        case "reboot":
+          await ec2Service.rebootInstance(instanceId);
+          break;
+        case "terminate":
+          await ec2Service.terminateInstance(instanceId);
+          break;
+        default:
+          console.log(`Performing ${action} on instance ${instanceId}`);
+          return;
+      }
+
+      // Refresh data after action
+      await fetchEC2Data();
+    } catch (err) {
+      console.error(`Failed to ${action} instance ${instanceId}:`, err);
+      setError(
+        err instanceof Error ? err.message : `Failed to ${action} instance`
+      );
+    } finally {
+      setIsLoadingData(false);
+    }
   };
 
   const handleQuickAction = (action: string) => {
@@ -171,10 +211,12 @@ export default function EC2Page() {
       onInstanceAction={handleInstanceAction}
       onQuickAction={handleQuickAction}
       user={user || undefined}
-      stats={mockStats}
-      instances={mockInstances}
+      stats={stats}
+      instances={instances}
       resourceLimits={mockResourceLimits}
       recentActivities={mockRecentActivities}
+      isLoading={isLoadingData}
+      error={error}
     />
   );
 }

@@ -1,14 +1,8 @@
 import { Card } from "@/components/ui/card";
-
-interface EC2StatsData {
-  runningInstances: number;
-  stoppedInstances: number;
-  totalVCPUs: number;
-  monthlyCost: number;
-}
+import { type EC2Stats } from "@/lib/types/ec2-types";
 
 interface EC2StatsCardsProps {
-  stats: EC2StatsData;
+  stats: EC2Stats;
 }
 
 /**
@@ -91,7 +85,7 @@ export function EC2StatsCards({ stats }: EC2StatsCardsProps) {
               Monthly Cost Est.
             </p>
             <p className="text-2xl font-bold text-purple-500">
-              ${stats.monthlyCost}
+              ${stats.estimatedMonthlyCost.toFixed(2)}
             </p>
           </div>
           <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">

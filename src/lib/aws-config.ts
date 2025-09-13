@@ -100,9 +100,6 @@ export class AWSConfigManager {
    */
   public getConfig(): AWSConfig {
     if (!this.config) {
-      // Validate environment variables first
-      this.validateEnvironmentVariables();
-
       const defaultRegion = process.env.NEXT_PUBLIC_AWS_REGION!;
 
       this.config = {
@@ -195,13 +192,19 @@ export class AWSConfigManager {
   /**
    * Gets EC2 client configuration for a specific region
    */
-  public getEC2ClientConfig(region?: string) {
+  public getEC2ClientConfig(region?: string, credentials?: unknown) {
     const config = this.getConfig();
 
-    return {
+    const clientConfig: Record<string, unknown> = {
       region: region || config.ec2.region,
-      // Credentials will be provided by the credential provider
     };
+
+    // Add credentials if provided
+    if (credentials) {
+      clientConfig.credentials = credentials;
+    }
+
+    return clientConfig;
   }
 
   /**

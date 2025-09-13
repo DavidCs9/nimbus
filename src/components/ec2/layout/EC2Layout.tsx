@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { EC2Header } from "./EC2Header";
 import { EC2StatsCards } from "../stats/EC2StatsCards";
-import { EC2InstanceList, EC2Instance } from "../instances/EC2InstanceList";
+import { EC2InstanceList } from "../instances/EC2InstanceList";
 import { EC2Sidebar } from "../sidebar/EC2Sidebar";
+import { type EC2Instance, type EC2Stats } from "@/lib/types/ec2-types";
 
 interface EC2LayoutProps {
   selectedRegion: string;
@@ -17,12 +18,7 @@ interface EC2LayoutProps {
     name?: string;
     email?: string;
   };
-  stats: {
-    runningInstances: number;
-    stoppedInstances: number;
-    totalVCPUs: number;
-    monthlyCost: number;
-  };
+  stats: EC2Stats;
   instances: EC2Instance[];
   resourceLimits: Array<{
     label: string;
@@ -35,6 +31,8 @@ interface EC2LayoutProps {
     target: string;
     timestamp: string;
   }>;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 /**
@@ -57,6 +55,8 @@ export function EC2Layout({
   instances,
   resourceLimits,
   recentActivities,
+  isLoading = false,
+  error = null,
 }: EC2LayoutProps) {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
@@ -83,17 +83,22 @@ export function EC2Layout({
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm" onClick={onRefresh}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRefresh}
+                disabled={isLoading}
+              >
                 <svg
-                  className="w-4 h-4 mr-2"
+                  className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path d="M4 12h16m-8-8l8 8-8 8" />
                 </svg>
-                Refresh
+                {isLoading ? "Loading..." : "Refresh"}
               </Button>
-              <Button size="sm" onClick={onLaunchInstance}>
+              <Button size="sm" onClick={onLaunchInstance} disabled={isLoading}>
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="currentColor"
@@ -106,6 +111,27 @@ export function EC2Layout({
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 text-red-500 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error loading EC2 data
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             {/* Quick Stats */}
             <div className="xl:col-span-4">
@@ -114,10 +140,22 @@ export function EC2Layout({
 
             {/* Instance List */}
             <div className="xl:col-span-3">
-              <EC2InstanceList
-                instances={instances}
-                onInstanceAction={onInstanceAction}
-              />
+              {isLoading && instances.length === 0 ? (
+                <div className="flex items-center justify-center p-8 bg-white rounded-lg border">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading EC2 instances...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <EC2InstanceList
+                  instances={instances}
+                  onInstanceAction={onInstanceAction}
+                  isLoading={isLoading}
+                />
+              )}
             </div>
 
             {/* Sidebar */}

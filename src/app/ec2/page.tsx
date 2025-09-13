@@ -2,98 +2,111 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
-import { EC2Layout, type EC2Instance, type EC2Stats } from "@/components/ec2";
-import { ec2Service } from "@/lib/services/ec2-service";
-import { authService } from "@/lib/auth-service";
+import { useEffect, useState, useMemo } from "react";
+import { EC2Layout } from "@/components/ec2";
+import {
+  useEC2Data,
+  useStartInstance,
+  useStopInstance,
+  useRebootInstance,
+  useTerminateInstance,
+  useRefreshEC2Data,
+} from "@/lib/hooks/useEC2Query";
 
 /**
  * EC2 Management Page
  *
  * Interface for managing Amazon EC2 instances.
  * Allows users to view, monitor, and manage their virtual servers.
+ * Now powered by TanStack Query for optimal performance and UX.
  */
 export default function EC2Page() {
   const { user, isAuthenticated, isLoading, tokens, signOut } = useAuth();
   const router = useRouter();
-  const [selectedRegion, setSelectedRegion] = useState("us-east-1");
-  const [instances, setInstances] = useState<EC2Instance[]>([]);
-  const [stats, setStats] = useState<EC2Stats>({
-    runningInstances: 0,
-    stoppedInstances: 0,
-    totalInstances: 0,
-    totalVCPUs: 0,
-    estimatedMonthlyCost: 0,
-    instancesByType: {},
-    instancesByRegion: {},
-  });
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState("us-west-1");
 
-  // Function to fetch EC2 data from the service
-  const fetchEC2Data = useCallback(async () => {
-    if (!isAuthenticated || !tokens?.idToken) return;
+  // TanStack Query hooks for EC2 data management
+  const {
+    instances: instancesQuery,
+    stats: statsQuery,
+    isLoading: isLoadingData,
+    isError,
+    error,
+  } = useEC2Data(selectedRegion, tokens?.idToken);
 
-    setIsLoadingData(true);
-    setError(null);
+  // Mutation hooks for EC2 operations with optimistic updates
+  const startInstanceMutation = useStartInstance(selectedRegion);
+  const stopInstanceMutation = useStopInstance(selectedRegion);
+  const rebootInstanceMutation = useRebootInstance(selectedRegion);
+  const terminateInstanceMutation = useTerminateInstance(selectedRegion);
 
-    try {
-      // Configure credentials for the EC2 service
-      const credentialProvider = await authService.createCredentialProvider(
-        tokens.idToken
-      );
-      ec2Service.setCredentials(credentialProvider);
+  // Refresh utilities
+  const { refresh: refreshEC2Data } = useRefreshEC2Data(selectedRegion);
 
-      // Update service region if needed
-      if (ec2Service["config"].region !== selectedRegion) {
-        ec2Service.updateConfig({ region: selectedRegion });
-      }
+  // Derived data with defaults (memoized for performance)
+  const instances = useMemo(
+    () => instancesQuery.data || [],
+    [instancesQuery.data]
+  );
+  const stats = useMemo(
+    () =>
+      statsQuery.data || {
+        runningInstances: 0,
+        stoppedInstances: 0,
+        totalInstances: 0,
+        totalVCPUs: 0,
+        estimatedMonthlyCost: 0,
+        instancesByType: {},
+        instancesByRegion: {},
+      },
+    [statsQuery.data]
+  );
 
-      // Fetch instances and stats in parallel
-      const [instancesData, statsData] = await Promise.all([
-        ec2Service.describeInstances(),
-        ec2Service.getInstanceStats(),
-      ]);
-
-      setInstances(instancesData);
-      setStats(statsData);
-    } catch (err) {
-      console.error("Failed to fetch EC2 data:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch EC2 data");
-    } finally {
-      setIsLoadingData(false);
+  // Error state (prioritize authentication errors)
+  const errorMessage = useMemo(() => {
+    if (isError && error) {
+      return error instanceof Error
+        ? error.message
+        : "Failed to fetch EC2 data";
     }
-  }, [isAuthenticated, selectedRegion, tokens?.idToken]);
+    return null;
+  }, [isError, error]);
 
-  // Mock data for offline development (remove when service is fully integrated)
-  const mockResourceLimits = [
-    {
-      label: "Running Instances",
-      current: stats.runningInstances,
-      max: 20,
-      color: "bg-blue-500",
-    },
-    {
-      label: "vCPU Usage",
-      current: stats.totalVCPUs,
-      max: 50,
-      color: "bg-green-500",
-    },
-    {
-      label: "Elastic IPs",
-      current: instances.filter((i) => i.publicIp).length,
-      max: 5,
-      color: "bg-orange-500",
-    },
-  ];
+  // Mock data for offline development (can be removed when fully integrated)
+  const mockResourceLimits = useMemo(
+    () => [
+      {
+        label: "Running Instances",
+        current: stats.runningInstances,
+        max: 20,
+        color: "bg-blue-500",
+      },
+      {
+        label: "vCPU Usage",
+        current: stats.totalVCPUs,
+        max: 50,
+        color: "bg-green-500",
+      },
+      {
+        label: "Elastic IPs",
+        current: instances.filter((i) => i.publicIp).length,
+        max: 5,
+        color: "bg-orange-500",
+      },
+    ],
+    [stats.runningInstances, stats.totalVCPUs, instances]
+  );
 
-  const mockRecentActivities = [
-    {
-      action: "Data Refreshed",
-      target: "EC2 Service",
-      timestamp: "Just now",
-    },
-  ];
+  const mockRecentActivities = useMemo(
+    () => [
+      {
+        action: "Data Refreshed",
+        target: "EC2 Service",
+        timestamp: "Just now",
+      },
+    ],
+    []
+  );
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -102,15 +115,8 @@ export default function EC2Page() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Fetch EC2 data when authenticated and region changes
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      fetchEC2Data();
-    }
-  }, [isAuthenticated, isLoading, selectedRegion, fetchEC2Data]);
-
-  // Show loading while checking authentication
-  if (isLoading || isLoadingData) {
+  // Show loading while checking authentication or loading data
+  if (isLoading || (isAuthenticated && isLoadingData && !instances.length)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
@@ -153,7 +159,7 @@ export default function EC2Page() {
   };
 
   const handleRefresh = () => {
-    fetchEC2Data();
+    refreshEC2Data();
   };
 
   const handleLaunchInstance = () => {
@@ -161,37 +167,29 @@ export default function EC2Page() {
     console.log("Launching new instance...");
   };
 
+  // Optimized instance action handlers using mutations
   const handleInstanceAction = async (instanceId: string, action: string) => {
     try {
-      setIsLoadingData(true);
-
       switch (action) {
         case "start":
-          await ec2Service.startInstance(instanceId);
+          await startInstanceMutation.mutateAsync(instanceId);
           break;
         case "stop":
-          await ec2Service.stopInstance(instanceId);
+          await stopInstanceMutation.mutateAsync({ instanceId });
           break;
         case "reboot":
-          await ec2Service.rebootInstance(instanceId);
+          await rebootInstanceMutation.mutateAsync(instanceId);
           break;
         case "terminate":
-          await ec2Service.terminateInstance(instanceId);
+          await terminateInstanceMutation.mutateAsync(instanceId);
           break;
         default:
           console.log(`Performing ${action} on instance ${instanceId}`);
           return;
       }
-
-      // Refresh data after action
-      await fetchEC2Data();
     } catch (err) {
       console.error(`Failed to ${action} instance ${instanceId}:`, err);
-      setError(
-        err instanceof Error ? err.message : `Failed to ${action} instance`
-      );
-    } finally {
-      setIsLoadingData(false);
+      // Error handling is managed by the mutation hooks
     }
   };
 
@@ -199,6 +197,13 @@ export default function EC2Page() {
     // TODO: Implement quick actions
     console.log(`Performing quick action: ${action}`);
   };
+
+  // Determine loading state for individual operations
+  const isPerformingAction =
+    startInstanceMutation.isPending ||
+    stopInstanceMutation.isPending ||
+    rebootInstanceMutation.isPending ||
+    terminateInstanceMutation.isPending;
 
   return (
     <EC2Layout
@@ -215,8 +220,8 @@ export default function EC2Page() {
       instances={instances}
       resourceLimits={mockResourceLimits}
       recentActivities={mockRecentActivities}
-      isLoading={isLoadingData}
-      error={error}
+      isLoading={isLoadingData || isPerformingAction}
+      error={errorMessage}
     />
   );
 }

@@ -115,8 +115,8 @@ export default function EC2Page() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loading while checking authentication or loading data
-  if (isLoading || (isAuthenticated && isLoadingData && !instances.length)) {
+  // Show loading only for authentication check (not for data loading)
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
@@ -220,7 +220,8 @@ export default function EC2Page() {
       instances={instances}
       resourceLimits={mockResourceLimits}
       recentActivities={mockRecentActivities}
-      isLoading={isLoadingData || isPerformingAction}
+      isLoadingData={isLoadingData}
+      isPerformingAction={isPerformingAction}
       error={errorMessage}
     />
   );

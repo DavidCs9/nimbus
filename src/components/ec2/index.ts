@@ -7,6 +7,9 @@ export { EC2StatsCards } from "./stats/EC2StatsCards";
 // Instance Components
 export { EC2InstanceList } from "./instances/EC2InstanceList";
 
+// Skeleton Components
+export * from "./skeletons/EC2Skeletons";
+
 // Sidebar Components
 export { EC2Sidebar } from "./sidebar/EC2Sidebar";
 

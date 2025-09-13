@@ -3,6 +3,11 @@ import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { EC2StatsCards } from "../stats/EC2StatsCards";
 import { EC2InstanceList } from "../instances/EC2InstanceList";
 import { EC2Sidebar } from "../sidebar/EC2Sidebar";
+import {
+  EC2StatsCardsSkeleton,
+  EC2InstanceListSkeleton,
+  EC2SidebarSkeleton,
+} from "../skeletons/EC2Skeletons";
 import { type EC2Instance, type EC2Stats } from "@/lib/types/ec2-types";
 
 interface EC2LayoutProps {
@@ -31,7 +36,8 @@ interface EC2LayoutProps {
     target: string;
     timestamp: string;
   }>;
-  isLoading?: boolean;
+  isLoadingData?: boolean;
+  isPerformingAction?: boolean;
   error?: string | null;
 }
 
@@ -55,7 +61,8 @@ export function EC2Layout({
   instances,
   resourceLimits,
   recentActivities,
-  isLoading = false,
+  isLoadingData = false,
+  isPerformingAction = false,
   error = null,
 }: EC2LayoutProps) {
   return (
@@ -90,18 +97,24 @@ export function EC2Layout({
                 variant="outline"
                 size="sm"
                 onClick={onRefresh}
-                disabled={isLoading}
+                disabled={isLoadingData}
               >
                 <svg
-                  className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 mr-2 ${
+                    isLoadingData ? "animate-spin" : ""
+                  }`}
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path d="M4 12h16m-8-8l8 8-8 8" />
                 </svg>
-                {isLoading ? "Loading..." : "Refresh"}
+                {isLoadingData ? "Loading..." : "Refresh"}
               </Button>
-              <Button size="sm" onClick={onLaunchInstance} disabled={isLoading}>
+              <Button
+                size="sm"
+                onClick={onLaunchInstance}
+                disabled={isLoadingData}
+              >
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="currentColor"
@@ -138,36 +151,37 @@ export function EC2Layout({
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             {/* Quick Stats */}
             <div className="xl:col-span-4">
-              <EC2StatsCards stats={stats} />
+              {isLoadingData && instances.length === 0 ? (
+                <EC2StatsCardsSkeleton />
+              ) : (
+                <EC2StatsCards stats={stats} />
+              )}
             </div>
 
             {/* Instance List */}
             <div className="xl:col-span-3">
-              {isLoading && instances.length === 0 ? (
-                <div className="flex items-center justify-center p-8 bg-white rounded-lg border">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">
-                      Loading EC2 instances...
-                    </p>
-                  </div>
-                </div>
+              {isLoadingData && instances.length === 0 ? (
+                <EC2InstanceListSkeleton count={5} />
               ) : (
                 <EC2InstanceList
                   instances={instances}
                   onInstanceAction={onInstanceAction}
-                  isLoading={isLoading}
+                  isLoading={isPerformingAction}
                 />
               )}
             </div>
 
             {/* Sidebar */}
             <div className="xl:col-span-1">
-              <EC2Sidebar
-                resourceLimits={resourceLimits}
-                recentActivities={recentActivities}
-                onQuickAction={onQuickAction}
-              />
+              {isLoadingData && instances.length === 0 ? (
+                <EC2SidebarSkeleton />
+              ) : (
+                <EC2Sidebar
+                  resourceLimits={resourceLimits}
+                  recentActivities={recentActivities}
+                  onQuickAction={onQuickAction}
+                />
+              )}
             </div>
           </div>
         </div>

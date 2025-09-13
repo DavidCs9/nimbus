@@ -13,8 +13,14 @@ export interface CognitoConfig {
   domain: string; // Cognito Hosted UI domain
 }
 
+export interface EC2Config {
+  region: string;
+  defaultRegions: string[];
+}
+
 export interface AWSConfig {
   cognito: CognitoConfig;
+  ec2: EC2Config;
 }
 
 export interface CognitoUrls {
@@ -94,14 +100,29 @@ export class AWSConfigManager {
    */
   public getConfig(): AWSConfig {
     if (!this.config) {
+      // Validate environment variables first
+      this.validateEnvironmentVariables();
+
+      const defaultRegion = process.env.NEXT_PUBLIC_AWS_REGION!;
+
       this.config = {
         cognito: {
-          region: process.env.NEXT_PUBLIC_AWS_REGION!,
+          region: defaultRegion,
           userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
           userPoolWebClientId:
             process.env.NEXT_PUBLIC_COGNITO_USER_POOL_WEB_CLIENT_ID!,
           identityPoolId: process.env.NEXT_PUBLIC_COGNITO_IDENTITY_POOL_ID!,
           domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN!,
+        },
+        ec2: {
+          region: defaultRegion,
+          defaultRegions: [
+            "us-east-1",
+            "us-west-2",
+            "eu-west-1",
+            "ap-southeast-1",
+            defaultRegion, // Include the configured region
+          ].filter((region, index, arr) => arr.indexOf(region) === index), // Remove duplicates
         },
       };
     }
@@ -114,6 +135,13 @@ export class AWSConfigManager {
    */
   public getCognitoConfig(): CognitoConfig {
     return this.getConfig().cognito;
+  }
+
+  /**
+   * Gets EC2 configuration specifically
+   */
+  public getEC2Config(): EC2Config {
+    return this.getConfig().ec2;
   }
 
   /**
@@ -161,6 +189,18 @@ export class AWSConfigManager {
     return {
       region: config.cognito.region,
       // No credentials here - they will be provided by the credential provider
+    };
+  }
+
+  /**
+   * Gets EC2 client configuration for a specific region
+   */
+  public getEC2ClientConfig(region?: string) {
+    const config = this.getConfig();
+
+    return {
+      region: region || config.ec2.region,
+      // Credentials will be provided by the credential provider
     };
   }
 

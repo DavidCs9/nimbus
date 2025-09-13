@@ -63,6 +63,10 @@ export default function DashboardPage() {
     }
   };
 
+  const navigateToEC2 = () => {
+    router.push("/ec2");
+  };
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
@@ -132,7 +136,10 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="group p-4 border rounded-xl bg-gradient-to-br from-card to-muted/20 hover:from-primary/5 hover:to-primary/10 transition-all duration-200 hover:border-primary/20">
+                    <div
+                      onClick={navigateToEC2}
+                      className="group p-4 border rounded-xl bg-gradient-to-br from-card to-muted/20 hover:from-primary/5 hover:to-primary/10 transition-all duration-200 hover:border-primary/20 cursor-pointer"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
                           <svg
@@ -143,8 +150,8 @@ export default function DashboardPage() {
                             <path d="M21 16V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 4h14v12H5V4zm2 6h2v4H7v-4zm4-2h2v6h-2V8zm4-2h2v8h-2V6z" />
                           </svg>
                         </div>
-                        <span className="text-xs bg-secondary/80 text-secondary-foreground px-2 py-1 rounded-full">
-                          Coming Soon
+                        <span className="text-xs bg-green-500/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">
+                          Available
                         </span>
                       </div>
                       <h3 className="font-semibold text-foreground mb-2">

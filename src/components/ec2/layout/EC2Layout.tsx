@@ -64,10 +64,8 @@ export function EC2Layout({
       <DashboardHeader
         user={user}
         onSignOut={onSignOut}
-        onNavigateBack={onNavigateToDashboard}
-        title="EC2"
+        onNavigateHome={onNavigateToDashboard}
         subtitle="Amazon Elastic Compute Cloud"
-        showBackButton={true}
         selectedRegion={selectedRegion}
         onRegionChange={onRegionChange}
         showRegionSelector={true}

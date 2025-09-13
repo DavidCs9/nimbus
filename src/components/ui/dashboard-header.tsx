@@ -9,12 +9,10 @@ interface DashboardHeaderProps {
 
   // Navigation props
   onSignOut: () => void;
-  onNavigateBack?: () => void; // For service pages like EC2
+  onNavigateHome?: () => void; // For navigating back to dashboard
 
   // Page context props
-  title?: string; // Page title (e.g., "Nimbus Console", "EC2")
   subtitle?: string; // Subtitle for service pages
-  showBackButton?: boolean; // Whether to show back navigation
 
   // Service-specific props (e.g., for EC2)
   selectedRegion?: string;
@@ -36,28 +34,29 @@ interface DashboardHeaderProps {
 export function DashboardHeader({
   user,
   onSignOut,
-  onNavigateBack,
-  title = "Nimbus Console",
+  onNavigateHome,
   subtitle,
-  showBackButton = false,
-  selectedRegion,
-  onRegionChange,
-  showRegionSelector = false,
+  selectedRegion = "us-west-1",
+  onRegionChange = () => {},
   icon = "main",
   customIconElement,
 }: DashboardHeaderProps) {
-  // Function to render the appropriate icon
-  const renderIcon = () => {
+  // Function to render service-specific icon (smaller, separate from main branding)
+  const renderServiceIcon = () => {
+    if (icon === "main") {
+      return null; // No service icon for main dashboard
+    }
+
     if (customIconElement) {
       return customIconElement;
     }
 
-    const iconClasses = "w-4 h-4";
+    const iconClasses = "w-3 h-3";
 
     switch (icon) {
       case "ec2":
         return (
-          <div className="inline-flex items-center justify-center w-8 h-8 bg-orange-500/10 rounded-lg">
+          <div className="inline-flex items-center justify-center w-6 h-6 bg-orange-500/10 rounded-md">
             <svg
               className={`${iconClasses} text-orange-500`}
               fill="currentColor"
@@ -69,7 +68,7 @@ export function DashboardHeader({
         );
       case "s3":
         return (
-          <div className="inline-flex items-center justify-center w-8 h-8 bg-green-500/10 rounded-lg">
+          <div className="inline-flex items-center justify-center w-6 h-6 bg-green-500/10 rounded-md">
             <svg
               className={`${iconClasses} text-green-500`}
               fill="currentColor"
@@ -81,7 +80,7 @@ export function DashboardHeader({
         );
       case "lambda":
         return (
-          <div className="inline-flex items-center justify-center w-8 h-8 bg-blue-500/10 rounded-lg">
+          <div className="inline-flex items-center justify-center w-6 h-6 bg-blue-500/10 rounded-md">
             <svg
               className={`${iconClasses} text-blue-500`}
               fill="currentColor"
@@ -91,57 +90,49 @@ export function DashboardHeader({
             </svg>
           </div>
         );
-      case "main":
       default:
-        return (
-          <div className="inline-flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-            <svg
-              className={`${iconClasses} text-primary-foreground`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M13 3L4 14h7v7l9-11h-7V3z" />
-            </svg>
-          </div>
-        );
+        return null;
     }
   };
-
   return (
     <header className="border-b bg-card flex-shrink-0">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left side: Navigation and Branding */}
         <div className="flex items-center space-x-3">
-          {/* Back button (for service pages) */}
-          {showBackButton && onNavigateBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onNavigateBack}
-              className="p-2"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+          {/* Clickable Nimbus logo and name */}
+          <button
+            onClick={onNavigateHome}
+            className="flex items-center space-x-3 hover:opacity-90 transition-opacity"
+          >
+            <div className="inline-flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
+              <svg
+                className="w-4 h-4 text-primary-foreground"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M13 3L4 14h7v7l9-11h-7V3z" />
               </svg>
-            </Button>
+            </div>
+            <h1 className="text-xl font-bold text-foreground">
+              Nimbus Console
+            </h1>
+          </button>
+
+          {/* Service icon (if not main dashboard) */}
+          {renderServiceIcon()}
+
+          {/* Subtitle for service pages */}
+          {subtitle && (
+            <div className="text-xs text-muted-foreground border-l pl-3 ml-1">
+              {subtitle}
+            </div>
           )}
-
-          {/* Icon */}
-          {renderIcon()}
-
-          {/* Title and subtitle */}
-          <div>
-            <h1 className="text-xl font-bold text-foreground">{title}</h1>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
-          </div>
         </div>
 
         {/* Right side: Controls and User Info */}
         <div className="flex items-center space-x-4">
           {/* Region selector (for AWS services) */}
-          {showRegionSelector && selectedRegion && onRegionChange && (
+          {selectedRegion && onRegionChange && (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">Region:</span>
               <select
@@ -160,9 +151,9 @@ export function DashboardHeader({
 
           {/* User greeting */}
           <span className="text-sm text-muted-foreground">
-            {showBackButton
-              ? user?.name || user?.email || "User"
-              : `Welcome, ${user?.name || user?.email || "User"}`}
+            {icon === "main"
+              ? `Welcome, ${user?.name || user?.email || "User"}`
+              : user?.name || user?.email || "User"}
           </span>
 
           {/* Sign out button */}

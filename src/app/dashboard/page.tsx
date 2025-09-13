@@ -67,10 +67,20 @@ export default function DashboardPage() {
     router.push("/ec2");
   };
 
+  const handleHomeNavigation = () => {
+    // On dashboard, scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <DashboardHeader user={user || undefined} onSignOut={handleSignOut} />
+      <DashboardHeader
+        user={user || undefined}
+        onSignOut={handleSignOut}
+        selectedRegion="us-west-1"
+        onNavigateHome={handleHomeNavigation}
+      />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-6 py-6 overflow-auto">

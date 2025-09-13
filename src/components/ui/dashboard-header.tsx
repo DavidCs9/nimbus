@@ -140,11 +140,13 @@ export function DashboardHeader({
                 onChange={(e) => onRegionChange(e.target.value)}
                 className="text-sm bg-background border border-border rounded-md px-2 py-1 text-foreground"
               >
-                <option value="us-east-1">US East (N. Virginia)</option>
-                <option value="us-west-1">US West (N. California)</option>
-                <option value="us-west-2">US West (Oregon)</option>
-                <option value="eu-west-1">Europe (Ireland)</option>
-                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                <option value="us-east-1">US East 1 (N. Virginia)</option>
+                <option value="us-west-1">US West 1 (N. California)</option>
+                <option value="us-west-2">US West 2 (Oregon)</option>
+                <option value="eu-west-1">EU West 1 (Ireland)</option>
+                <option value="ap-southeast-1">
+                  AP Southeast 1 (Singapore)
+                </option>
               </select>
             </div>
           )}

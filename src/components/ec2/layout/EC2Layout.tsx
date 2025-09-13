@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { EC2Header } from "./EC2Header";
+import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { EC2StatsCards } from "../stats/EC2StatsCards";
 import { EC2InstanceList } from "../instances/EC2InstanceList";
 import { EC2Sidebar } from "../sidebar/EC2Sidebar";
@@ -61,12 +61,17 @@ export function EC2Layout({
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <EC2Header
+      <DashboardHeader
+        user={user}
+        onSignOut={onSignOut}
+        onNavigateBack={onNavigateToDashboard}
+        title="EC2"
+        subtitle="Amazon Elastic Compute Cloud"
+        showBackButton={true}
         selectedRegion={selectedRegion}
         onRegionChange={onRegionChange}
-        onNavigateToDashboard={onNavigateToDashboard}
-        onSignOut={onSignOut}
-        user={user}
+        showRegionSelector={true}
+        icon="ec2"
       />
 
       {/* Main Content */}

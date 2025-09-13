@@ -1,5 +1,4 @@
 // Layout Components
-export { EC2Header } from "./layout/EC2Header";
 export { EC2Layout } from "./layout/EC2Layout";
 
 // Stats Components

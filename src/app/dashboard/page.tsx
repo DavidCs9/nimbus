@@ -3,7 +3,6 @@
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DashboardHeader } from "@/components/ui/dashboard-header";
 
 /**
  * Dashboard Page
@@ -70,33 +70,7 @@ export default function DashboardPage() {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="border-b bg-card flex-shrink-0">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="inline-flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-              <svg
-                className="w-4 h-4 text-primary-foreground"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M13 3L4 14h7v7l9-11h-7V3z" />
-              </svg>
-            </div>
-            <h1 className="text-xl font-bold text-foreground">
-              Nimbus Console
-            </h1>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user?.name || user?.email || "User"}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+      <DashboardHeader user={user || undefined} onSignOut={handleSignOut} />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-6 py-6 overflow-auto">
